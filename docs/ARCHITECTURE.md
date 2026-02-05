@@ -135,8 +135,9 @@ RLangC/
 - Standard library integration
 
 **Key Design Decisions**:
-- Stack-based VM
-- Direct-threaded dispatch for hot loops
+- Stack-based VM with direct-threaded dispatch to avoid large switch statements
+- Computed goto (GNU C labels-as-values extension) used where supported
+- Switch-based dispatch fallback for compilers without computed goto support (e.g., MSVC)
 - Shared runtime with native backend
 - Incremental, concurrent GC integration
 - JIT compilation opportunities
@@ -199,7 +200,7 @@ RLangC/
 **Performance Strategies**:
 - Escape analysis for stack allocation of non-escaping objects
 - Region/arena allocators for high-throughput subsystems
-- Safepoints in the interpreter and generated code for concurrent GC
+- Safepoints in the interpreter and generated code for concurrent garbage collection
 
 **FFI Interaction**:
 - Pinning API for objects shared with C/Rust/Zig

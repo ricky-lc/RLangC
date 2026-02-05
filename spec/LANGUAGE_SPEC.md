@@ -21,6 +21,7 @@ RLangC is a general-purpose programming language designed to blend:
 - **Value vs reference**: Primitive values are copied; collections and objects are reference types.
 - **`none`**: Represents the absence of a value and is the only null-like sentinel.
 - **Modules**: Top-level statements execute in order; imports bind module namespaces.
+- **Property access**: `obj.name` is syntactic sugar for `obj["name"]`.
 
 ## Language Features
 
@@ -47,8 +48,7 @@ const PI = 3.14159  # Inferred as float
 
 ### Function Definitions
 
-Functions use the `def` keyword:
-Arrow function syntax is intentionally not supported.
+Functions use the `def` keyword. **Note**: Arrow function syntax is intentionally not supported to keep multi-line functions explicit and Python-like.
 
 ```python
 # Simple function
@@ -159,6 +159,10 @@ Property access is supported as syntactic sugar for string keys:
 print(user.name)  # Equivalent to user["name"]
 ```
 
+`object` is a specialized, string-keyed record type with shape optimization; `dict` remains the general key/value map.
+Use `object` for record-like data with stable string keys, and `dict` for arbitrary keys or highly dynamic shapes.
+Using `dict` with non-string keys uses hash tables and skips shape optimization, while `object` keeps inline slots for faster property access.
+
 ### Modules and Imports
 
 ```python
@@ -205,7 +209,7 @@ Direct execution through bytecode interpreter:
 
 ### Native Compilation Mode
 
-Compilation to native code via C, Zig, Rust, or LLVM backends:
+Compilation to native code is planned via an initial C backend, with future support for Zig, Rust, and direct LLVM IR emission:
 - Maximum performance
 - Standalone executables
 - Production deployments
@@ -243,7 +247,7 @@ async def fetch_data(url):
 ### Memory Management
 
 - **Generational**: Young/old spaces with fast promotion
-- **Incremental + concurrent**: Collector runs alongside mutator to reduce pauses
+- **Incremental + concurrent**: Collector runs alongside application code (mutator) to reduce pauses
 - **Precise + compacting**: Exact pointer maps with compaction to limit fragmentation
 - **Write barriers**: Maintain remembered sets for generational and concurrent safety
 - **Bump-pointer allocation**: Fast allocation in the young generation
@@ -260,7 +264,7 @@ async def fetch_data(url):
 - `list`: Ordered collections
 - `dict`: Key/value collections
 - `set`: Unique-value collections
-- `object`: Dictionary-backed records
+- `object`: String-keyed dict with shape metadata
 - `any`: Dynamic type (default)
 
 ### Type Inference
@@ -281,9 +285,9 @@ let z = x + y       # Inferred: float (widening)
 
 ## Standard Library Outline
 
-- **core**: `print`, `len`, `type`, `assert`, `defer`
+- **core**: `print`, `len`, `type`, `assert`, `defer`, `range`, `format`
 - **collections**: lists, dicts, sets, iterators, sorting
-- **io**: files, streams, paths, serialization
+- **io**: files, streams, paths, serialization, `IOError` exceptions
 - **net**: HTTP, sockets, DNS
 - **concurrency**: tasks, futures, channels, locks
 - **time**: timers, clocks, scheduling

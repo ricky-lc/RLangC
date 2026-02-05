@@ -3,12 +3,16 @@
 # Run: ./native_example
 
 def fib(n: int) -> int:
-    if n <= 1:
-        return n
-    return fib(n - 1) + fib(n - 2)
+    let previous = 0
+    let current = 1
+    for _ in range(n):
+        let temp = current
+        current = previous + current
+        previous = temp
+    return previous
 
 def main():
     let value = fib(10)
-    print("fib(10) = " + str(value))
+    print(format("fib(10) = {}", value))
 
 main()
