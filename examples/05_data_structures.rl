@@ -35,6 +35,12 @@ def find_max(nums):
 let values = [3, 7, 2, 9, 1, 5]
 print("Max value: " + str(find_max(values)))
 
+# Objects / dictionaries
+let user = {"name": "Ada", "age": 36, "active": true}
+print("User: " + user["name"] + " (" + str(user["age"]) + ")")
+user["role"] = "engineer"
+print("Role: " + user["role"])
+
 # List filtering
 def filter_positive(nums):
     let result = []

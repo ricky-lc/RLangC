@@ -13,11 +13,23 @@ RLangC is a general-purpose programming language designed to blend:
 2. **Clarity**: Readable syntax that expresses intent clearly
 3. **Performance**: Dual execution modes for different use cases
 
+## Semantics
+
+- **Lexical scoping**: Blocks (indentation or braces) create scopes; inner bindings shadow outer ones.
+- **Bindings**: `let` introduces mutable bindings, `const` introduces immutable bindings.
+- **Evaluation order**: Expressions and call arguments evaluate left-to-right before the call executes.
+- **Value vs reference**: Primitive values are copied; collections and objects are reference types.
+- **`none`**: Represents the absence of a value and is the only null-like sentinel.
+- **Modules**: Top-level statements execute in order; imports bind module namespaces.
+
 ## Language Features
 
 ### Gradual Typing
 
 RLangC supports gradual typing with dynamic defaults and optional static types with inference:
+
+- Static annotations enable specialization in IR, removing dynamic checks and unlocking native-code optimizations.
+- Annotations can appear per variable, per function signature, or at module scope (`@typed`) to opt into stricter checking.
 
 ```python
 # Dynamic typing (default)
@@ -36,6 +48,7 @@ const PI = 3.14159  # Inferred as float
 ### Function Definitions
 
 Functions use the `def` keyword:
+Arrow function syntax is intentionally not supported.
 
 ```python
 # Simple function
@@ -130,6 +143,57 @@ for num in numbers:
     print(num)
 ```
 
+### Objects and Dictionaries
+
+Objects are dictionary-like structures with string keys:
+
+```python
+let user = {"name": "Ada", "age": 36}
+print(user["name"])
+user["role"] = "engineer"
+```
+
+Property access is supported as syntactic sugar for string keys:
+
+```python
+print(user.name)  # Equivalent to user["name"]
+```
+
+### Modules and Imports
+
+```python
+import math
+import net.http as http
+
+let radius = 4.0
+let area = math.pi * radius * radius
+```
+
+### Error Handling
+
+RLangC uses **exceptions** for ergonomics and consistency with Python/JS. Exceptions can unwind control flow, while `defer` ensures deterministic cleanup for external resources.
+
+```python
+def read_config(path):
+    try:
+        let text = io.read_file(path)
+        return parse_config(text)
+    except IOError as err:
+        log.error("Failed to read config: " + err.message)
+        return none
+    finally:
+        cleanup()
+```
+
+### Foreign Function Interface (FFI)
+
+```python
+extern "C" def c_sin(x: float) -> float
+extern "Rust" def hash_bytes(data: list) -> int
+
+let value = c_sin(1.57)
+```
+
 ## Execution Modes
 
 ### Interpreter Mode
@@ -141,7 +205,7 @@ Direct execution through bytecode interpreter:
 
 ### Native Compilation Mode
 
-Compilation to native code via C backend:
+Compilation to native code via C, Zig, Rust, or LLVM backends:
 - Maximum performance
 - Standalone executables
 - Production deployments
@@ -169,7 +233,7 @@ IR Generation
 
 ### Concurrent Execution
 
-Built-in support for concurrent programming:
+Built-in support for concurrent programming with an event-loop scheduler that cooperates with the GC:
 ```python
 # Conceptual syntax (to be implemented)
 async def fetch_data(url):
@@ -178,9 +242,11 @@ async def fetch_data(url):
 
 ### Memory Management
 
-- **Incremental**: Reduces pause times
-- **Generational**: Optimizes for common patterns
-- **Precise**: Accurate object tracking
+- **Generational**: Young/old spaces with fast promotion
+- **Incremental + concurrent**: Collector runs alongside mutator to reduce pauses
+- **Precise + compacting**: Exact pointer maps with compaction to limit fragmentation
+- **Write barriers**: Maintain remembered sets for generational and concurrent safety
+- **Bump-pointer allocation**: Fast allocation in the young generation
 
 ## Type System
 
@@ -192,6 +258,9 @@ async def fetch_data(url):
 - `bool`: Boolean values (true/false)
 - `none`: Null/absence of value
 - `list`: Ordered collections
+- `dict`: Key/value collections
+- `set`: Unique-value collections
+- `object`: Dictionary-backed records
 - `any`: Dynamic type (default)
 
 ### Type Inference
@@ -210,9 +279,24 @@ let z = x + y       # Inferred: float (widening)
 - Structural typing for collections
 - Gradual typing allows mixing static and dynamic code
 
+## Standard Library Outline
+
+- **core**: `print`, `len`, `type`, `assert`, `defer`
+- **collections**: lists, dicts, sets, iterators, sorting
+- **io**: files, streams, paths, serialization
+- **net**: HTTP, sockets, DNS
+- **concurrency**: tasks, futures, channels, locks
+- **time**: timers, clocks, scheduling
+- **ffi**: C/Rust/Zig bindings
+
 ## Example Programs
 
-See the `examples/` directory for complete program demonstrations.
+See the `examples/` directory for complete program demonstrations, including:
+- Hello world and control flow
+- Typed vs untyped variables and functions
+- Objects/dictionaries and collections
+- Async/await usage
+- Native compilation workflow
 
 ## Implementation Status
 

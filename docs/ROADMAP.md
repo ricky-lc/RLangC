@@ -17,6 +17,25 @@
 - [x] Indentation or braces support
 - [x] Full operator set
 
+## Minimum Viable Language (MVL)
+
+The MVL focuses on a compact, usable core:
+- `let`/`const`, `def`, `if`/`while`/`for`, basic expressions
+- Built-in types: int/float/str/bool/none, list, dict
+- Modules/imports and a minimal standard library (`print`, `len`, math)
+- Interpreter execution with the shared IR
+- Basic generational GC (young/old, incremental)
+
+## Milestones
+
+1. **Lexer + Parser**: tokenization, indentation/brace support, AST build
+2. **Semantic + IR**: type inference, symbol tables, IR generation
+3. **Interpreter**: execute IR with runtime checks
+4. **Native C Backend**: emit C and compile
+5. **Runtime & GC**: concurrent generational collector, allocator
+6. **Standard Library**: core collections, I/O, networking
+7. **Async Runtime**: event loop, tasks, futures
+
 ## Phase 2: Lexer Implementation 🚧
 
 ### Tasks
@@ -274,3 +293,9 @@ Contributors can pick tasks from any phase. See CONTRIBUTING.md for guidelines.
 - Implementation order may adjust based on priorities
 - Some features may be deferred
 - Focus on correctness before performance
+
+## Future Extensions
+
+- Pattern matching, generics, and union types
+- Additional backends (LLVM, Zig, Rust)
+- JIT compilation and profile-guided optimization

@@ -30,6 +30,22 @@ Each compilation stage has a single, well-defined responsibility:
   - Standalone executables
   - Production deployments
 
+## Repository & Module Layout
+
+```
+RLangC/
+├── spec/              # Language specification
+├── docs/              # Architecture, roadmap, type system
+├── examples/          # Sample programs
+├── src/
+│   ├── frontend/      # lexer, parser, AST, semantic analysis
+│   ├── ir/            # core IR and transforms
+│   ├── backends/      # interpreter, C/Zig/Rust/LLVM emitters
+│   ├── runtime/       # GC, allocator, async scheduler
+│   └── stdlib/        # standard library modules
+└── tools/             # CLI, REPL, formatter
+```
+
 ## Pipeline Stages
 
 ### Stage 1: Lexical Analysis
@@ -98,6 +114,13 @@ Each compilation stage has a single, well-defined responsibility:
 - Control flow graph representation
 - Platform-independent design
 
+### IR Design Details
+
+- **Core form**: SSA-flavored, block-based IR with explicit control-flow edges.
+- **Instruction groups**: constants, locals, calls, branches, heap allocation, and type guards.
+- **Types**: each value carries an optional static type; `any` values retain runtime tags.
+- **Metadata**: source spans and symbol IDs enable diagnostics and debug mapping.
+
 ### Stage 5: Backend Execution
 
 #### Interpreter Backend
@@ -113,9 +136,15 @@ Each compilation stage has a single, well-defined responsibility:
 
 **Key Design Decisions**:
 - Stack-based VM
-- Reference counting + cycle detection
-- Incremental garbage collection
+- Direct-threaded dispatch for hot loops
+- Shared runtime with native backend
+- Incremental, concurrent GC integration
 - JIT compilation opportunities
+
+**Interpreter Design**:
+- Each function executes in a frame with locals and a value stack.
+- Dynamic operations consult runtime type tags when static types are absent.
+- The interpreter yields at safe points to allow concurrent GC work.
 
 #### Native Compilation Backend
 
@@ -132,23 +161,56 @@ Each compilation stage has a single, well-defined responsibility:
 - Leverage C compiler optimizations
 - Support multiple backends (C, Zig, Rust, LLVM)
 
+**Native Backend Design**:
+- Lower IR to backend-specific ASTs with explicit control flow and type info.
+- Emit specialized code when static types are known; fall back to runtime helpers for `any`.
+- Preserve source maps for debugging and profiling.
+
 ## Runtime System
+
+### Memory Model
+
+- **Safe by default**: bounds checks and type checks in dynamic paths.
+- **Low-level control**: `unsafe` blocks and explicit pointer types for systems work.
+- **Deterministic cleanup**: `defer` executes at scope exit to release external resources.
 
 ### Memory Management
 
-**Strategy**: Incremental, Generational, Precise GC
+**Strategy**: Concurrent, incremental, generational, precise, compacting GC
 
 **Components**:
 1. **Allocator**: Fast bump allocation in young generation
-2. **Collector**: Incremental mark-and-sweep
+2. **Collector**: Incremental concurrent mark-compact
 3. **Generations**: Young (frequent) and Old (infrequent)
-4. **Precision**: Accurate pointer identification
+4. **Precision**: Exact pointer maps from compiler and interpreter
 
 **Key Design Decisions**:
 - Young generation for short-lived objects
 - Old generation promotion for survivors
-- Incremental collection to reduce pauses
-- Write barriers for generational collection
+- Concurrent collection to reduce pauses
+- Compacting old generation to reduce fragmentation
+- Write barriers with card marking for remembered sets
+
+**Heap Layout**:
+- Nursery (bump-pointer) for new allocations
+- Old generation split into pages with compaction metadata
+- Large-object space for oversized allocations
+
+**Performance Strategies**:
+- Escape analysis for stack allocation of non-escaping objects
+- Region/arena allocators for high-throughput subsystems
+- Safepoints in the interpreter and generated code for concurrent GC
+
+**FFI Interaction**:
+- Pinning API for objects shared with C/Rust/Zig
+- Handles for moving objects during compaction
+
+### Object Model
+
+- **Header**: type tag, GC color bits, size, and shape pointer.
+- **Primitives**: unboxed when statically typed, boxed when dynamic.
+- **Objects/dicts**: shape-based layout for fast property access.
+- **Lists/arrays**: contiguous buffers with bounds metadata.
 
 ### Concurrency Support
 
@@ -165,6 +227,7 @@ Each compilation stage has a single, well-defined responsibility:
 - Non-blocking I/O
 - Message passing for isolation
 - No shared mutable state
+- Scheduler integrates with GC safepoints to avoid long pauses
 
 ## Type System
 
