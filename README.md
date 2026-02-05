@@ -1,6 +1,7 @@
 # RLangC - A Modern Multi-Paradigm Language
 
 RLangC is a general-purpose programming language that combines the best aspects of Python, JavaScript, and C to create a powerful, readable, and performant language.
+Native compilation targets ~2.5x Python performance, and the language embraces braces, `let`/`const`, and low-level control so it does not feel solely Python-like.
 
 ## Design Philosophy
 
@@ -8,7 +9,7 @@ RLangC is a general-purpose programming language that combines the best aspects 
 
 **Clarity Matters**: Code should be easy to read and understand. Syntax choices prioritize human comprehension.
 
-**Performance When Needed**: Dual execution modes allow you to choose between rapid development (interpreter) and production speed (native compilation).
+**Performance When Needed**: Dual execution modes target ~2.5x Python performance in native compilation while keeping fast interpreter iteration.
 
 ## Key Features
 

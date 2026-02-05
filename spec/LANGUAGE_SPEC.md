@@ -6,12 +6,13 @@ RLangC is a general-purpose programming language designed to blend:
 - **Python's readability**: Clean syntax with indentation-based scoping
 - **JavaScript's expressiveness**: Flexible and dynamic features
 - **C's familiarity**: Recognizable control structures and operators
+It also embraces braces, `let`/`const` bindings, and low-level controls so the overall feel is not purely Python-like.
 
 ## Core Priorities
 
 1. **Correctness**: Static analysis and optional type checking catch errors early
 2. **Clarity**: Readable syntax that expresses intent clearly
-3. **Performance**: Dual execution modes for different use cases
+3. **Performance**: Dual execution modes with a native target of ~2.5x Python performance
 
 ## Semantics
 
