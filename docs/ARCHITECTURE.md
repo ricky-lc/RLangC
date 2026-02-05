@@ -78,7 +78,7 @@ Each compilation stage has a single, well-defined responsibility:
 
 **Key Design Decisions**:
 - Gradual typing: mix static and dynamic
-- Type inference for unann otated variables
+- Type inference for unannotated variables
 - Scope-based symbol resolution
 - Compatible type checking with coercion rules
 

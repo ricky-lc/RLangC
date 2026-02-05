@@ -56,7 +56,7 @@ let mixed: list = [1, "two", 3.0]  # Heterogeneous allowed
 ### Special Types
 
 #### `any` - Dynamic Type
-The default type for unannot ated variables. Represents any possible value.
+The default type for unannotated variables. Represents any possible value.
 
 ```python
 let dynamic = 42  # Type: any
