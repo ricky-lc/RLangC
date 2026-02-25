@@ -1,4 +1,4 @@
-# Variables and Type System Examples
+# Variables and Type System Examples (Typed vs Untyped)
 
 # Dynamic typing (default)
 let message = "Welcome to RLangC"
