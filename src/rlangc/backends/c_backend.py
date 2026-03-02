@@ -6,7 +6,7 @@ def generate_c(module: IRModule) -> str:
 
 int main(void) {{
     printf("RLangC native executable bootstrap\\n");
-    printf("token_count=%d\\n", {len(module.tokens)});
+    printf("token_count={len(module.tokens)}\\n");
     return 0;
 }}
 """

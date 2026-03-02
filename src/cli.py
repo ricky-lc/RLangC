@@ -51,8 +51,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return _run_check(args.path)
     if args.command == "compile":
         return _run_compile(args.path, args.output, args.cc)
-    parser.error("No command provided")
-    return 2
+    raise RuntimeError(f"Unsupported command: {args.command}")
 
 
 if __name__ == "__main__":
