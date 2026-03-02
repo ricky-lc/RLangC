@@ -152,6 +152,8 @@ RLangC/
 **Input**: IR  
 **Output**: C source code → Native executable
 
+Current implementation includes a CLI bootstrap path (`rlangc compile input.rl -o output`) that generates C and invokes a system C compiler to produce a standalone executable.
+
 **Responsibilities**:
 - Generate readable C code from IR
 - Interface with system C compiler

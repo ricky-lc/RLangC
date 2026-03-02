@@ -2,4 +2,11 @@ from rlangc.ir.ir import IRModule
 
 
 def generate_c(module: IRModule) -> str:
-    return "// C backend not implemented."
+    return f"""#include <stdio.h>
+
+int main(void) {{
+    printf("RLangC native executable bootstrap\\n");
+    printf("token_count=%d\\n", {len(module.tokens)});
+    return 0;
+}}
+"""
