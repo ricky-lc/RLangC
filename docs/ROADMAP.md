@@ -46,7 +46,7 @@ The MVL focuses on a compact, usable core:
 - [ ] Operator tokenization
 - [ ] String literal handling with escapes
 - [ ] Number literal parsing (int/float)
-- [ ] Error reporting with location
+- [x] Error reporting with location
 
 ### Testing
 - [ ] Unit tests for each token type

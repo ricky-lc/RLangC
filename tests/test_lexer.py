@@ -36,6 +36,10 @@ class LexerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unexpected character"):
             tokenize("let x = 1 €")
 
+    def test_tokenize_reports_error_location(self) -> None:
+        with self.assertRaisesRegex(ValueError, "line 2, column 1"):
+            tokenize("let x = 1\n€")
+
 
 if __name__ == "__main__":
     unittest.main()

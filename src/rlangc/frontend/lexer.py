@@ -16,7 +16,11 @@ def tokenize(source: str) -> List[Token]:
             append(Token(kind="KEYWORD", value=value))
             continue
         if kind == "MISMATCH":
-            raise ValueError(f"Unexpected character: {value!r}")
+            position = match.start()
+            line = source.count("\n", 0, position) + 1
+            line_start = source.rfind("\n", 0, position) + 1
+            column = position - line_start + 1
+            raise ValueError(f"Unexpected character {value!r} at line {line}, column {column}")
         append(Token(kind=kind, value=value))
     return tokens
 
