@@ -45,7 +45,7 @@ def greet(name) {             # Braces
 
 ## Quick Start
 
-### Installation
+### Installation (Developer Bootstrap)
 ```bash
 pip install rlangc
 ```
@@ -60,13 +60,12 @@ main()
 
 ### Running Code
 ```bash
-# Interpreter mode
-rlangc run program.rl
-
-# Compile to native
+# Compile to a native executable (C toolchain required)
 rlangc compile program.rl -o program
 ./program
 ```
+
+The current implementation path is native-first: `rlangc compile` emits C and builds a standalone executable, so execution is not tied to `pip` at runtime.
 
 ## Language Tour
 
