@@ -9,6 +9,7 @@ from rlangc.frontend.ast import (
     Literal,
     Module,
     ReturnStatement,
+    Statement,
     Token,
     UnaryExpression,
 )
@@ -47,7 +48,7 @@ class _Parser:
             statements.append(self._parse_statement())
         return Module(tokens=self._tokens, statements=statements)
 
-    def _parse_statement(self):
+    def _parse_statement(self) -> Statement:
         token = self._peek()
         if token.kind == "KEYWORD" and token.value in {"let", "const"}:
             return self._parse_let_statement()
@@ -85,7 +86,7 @@ class _Parser:
             if precedence < min_precedence:
                 break
             self._advance()
-            next_min = precedence if operator == "**" else precedence + 1
+            next_min = precedence if self._is_right_associative(operator) else precedence + 1
             right = self._parse_expression(next_min)
             left = BinaryExpression(left=left, operator=operator, right=right)
         return left
@@ -110,7 +111,7 @@ class _Parser:
             return Literal(value=float(token.value))
         if token.kind == "STRING":
             self._advance()
-            return Literal(value=token.value[1:-1])
+            return Literal(value=self._extract_string_literal(token))
         if token.kind == "IDENTIFIER":
             self._advance()
             return Identifier(name=token.value)
@@ -134,6 +135,17 @@ class _Parser:
         if token.kind == "KEYWORD" and token.value in {"and", "or"}:
             return token.value
         return None
+
+    def _is_right_associative(self, operator: str) -> bool:
+        return operator == "**"
+
+    def _extract_string_literal(self, token: Token) -> str:
+        if len(token.value) < 2:
+            raise ParseError("Invalid string literal token")
+        quote = token.value[0]
+        if quote not in {'"', "'"} or token.value[-1] != quote:
+            raise ParseError("Invalid string literal token")
+        return token.value[1:-1]
 
     def _peek(self) -> Token:
         if self._is_at_end():

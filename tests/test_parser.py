@@ -17,8 +17,9 @@ class ParserTests(unittest.TestCase):
         self.assertIsInstance(stmt.value, Literal)
         self.assertEqual(stmt.value.value, 42)
 
-    def test_parse_const_expression_respects_precedence(self) -> None:
+    def test_parse_expression_respects_precedence(self) -> None:
         module = parse(tokenize("const value = x + y * 2"))
+        self.assertEqual(len(module.statements), 1)
         stmt = module.statements[0]
         self.assertIsInstance(stmt, LetStatement)
         self.assertTrue(stmt.is_const)
@@ -32,6 +33,7 @@ class ParserTests(unittest.TestCase):
 
     def test_parse_return_statement(self) -> None:
         module = parse(tokenize("return 1 + 2"))
+        self.assertEqual(len(module.statements), 1)
         stmt = module.statements[0]
         self.assertIsInstance(stmt, ReturnStatement)
         self.assertIsNotNone(stmt.value)
