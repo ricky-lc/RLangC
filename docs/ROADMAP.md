@@ -39,14 +39,14 @@ The MVL focuses on a compact, usable core:
 ## Phase 2: Lexer Implementation 🚧
 
 ### Tasks
-- [ ] Token definitions
-- [ ] Character stream processing
-- [ ] Indentation tracking (INDENT/DEDENT)
-- [ ] Keyword recognition
-- [ ] Operator tokenization
-- [ ] String literal handling with escapes
-- [ ] Number literal parsing (int/float)
-- [ ] Error reporting with location
+- [x] Token definitions
+- [x] Character stream processing
+- [x] Indentation tracking (INDENT/DEDENT)
+- [x] Keyword recognition
+- [x] Operator tokenization
+- [x] String literal handling with escapes
+- [x] Number literal parsing (int/float)
+- [x] Error reporting with location
 
 ### Testing
 - [ ] Unit tests for each token type
@@ -56,13 +56,13 @@ The MVL focuses on a compact, usable core:
 ## Phase 3: Parser Implementation 🚧
 
 ### Tasks
-- [ ] AST node definitions
-- [ ] Recursive descent parser
-- [ ] Expression parsing with precedence
-- [ ] Statement parsing
-- [ ] Function declaration parsing
+- [x] AST node definitions
+- [x] Recursive descent parser
+- [x] Expression parsing with precedence
+- [x] Statement parsing
+- [x] Function declaration parsing
 - [ ] Class declaration parsing
-- [ ] Both syntax style support (indent/brace)
+- [x] Both syntax style support (indent/brace)
 - [ ] Error recovery and reporting
 
 ### Testing

@@ -223,7 +223,7 @@ The language design welcomes feedback and suggestions. See CONTRIBUTING.md for d
 
 ## License
 
-[To be determined]
+Proprietary - see [`LICENSE`](LICENSE).
 
 ## Contact
 
