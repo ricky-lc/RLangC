@@ -56,9 +56,9 @@ The MVL focuses on a compact, usable core:
 ## Phase 3: Parser Implementation 🚧
 
 ### Tasks
-- [ ] AST node definitions
-- [ ] Recursive descent parser
-- [ ] Expression parsing with precedence
+- [x] AST node definitions
+- [x] Recursive descent parser
+- [x] Expression parsing with precedence
 - [ ] Statement parsing
 - [ ] Function declaration parsing
 - [ ] Class declaration parsing
