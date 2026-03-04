@@ -14,6 +14,7 @@ class LexerTests(unittest.TestCase):
                 ("IDENTIFIER", "x"),
                 ("OPERATOR", "="),
                 ("FLOAT", "3.14"),
+                ("NEWLINE", "\n"),
                 ("KEYWORD", "if"),
                 ("IDENTIFIER", "x"),
                 ("OPERATOR", ">="),
@@ -24,13 +25,39 @@ class LexerTests(unittest.TestCase):
                 ("STRING", '"ok"'),
                 ("PUNCT", ")"),
                 ("PUNCT", "}"),
+                ("NEWLINE", "\n"),
+            ],
+        )
+
+    def test_tokenize_emits_indent_and_dedent(self) -> None:
+        source = "if true:\n    let x = 1\nlet y = 2\n"
+        tokens = tokenize(source)
+        self.assertEqual(
+            [token.kind for token in tokens],
+            [
+                "KEYWORD",
+                "KEYWORD",
+                "PUNCT",
+                "NEWLINE",
+                "INDENT",
+                "KEYWORD",
+                "IDENTIFIER",
+                "OPERATOR",
+                "INTEGER",
+                "NEWLINE",
+                "DEDENT",
+                "KEYWORD",
+                "IDENTIFIER",
+                "OPERATOR",
+                "INTEGER",
+                "NEWLINE",
             ],
         )
 
     def test_tokenize_skips_comments(self) -> None:
         source = "const y = 2 # trailing comment"
         tokens = tokenize(source)
-        self.assertEqual([token.value for token in tokens], ["const", "y", "=", "2"])
+        self.assertEqual([token.value for token in tokens], ["const", "y", "=", "2", "\n"])
 
     def test_tokenize_raises_on_invalid_character(self) -> None:
         with self.assertRaisesRegex(ValueError, "Unexpected character"):

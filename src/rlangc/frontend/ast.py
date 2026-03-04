@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 
 @dataclass(frozen=True)
@@ -37,6 +37,34 @@ class BinaryExpression(Expression):
 
 
 @dataclass(frozen=True)
+class CallExpression(Expression):
+    callee: Expression
+    arguments: List[Expression]
+
+
+@dataclass(frozen=True)
+class IndexExpression(Expression):
+    target: Expression
+    index: Expression
+
+
+@dataclass(frozen=True)
+class AttributeExpression(Expression):
+    target: Expression
+    name: str
+
+
+@dataclass(frozen=True)
+class ListLiteral(Expression):
+    elements: List[Expression]
+
+
+@dataclass(frozen=True)
+class DictLiteral(Expression):
+    entries: List[Tuple[Expression, Expression]]
+
+
+@dataclass(frozen=True)
 class Statement:
     pass
 
@@ -57,6 +85,49 @@ class ReturnStatement(Statement):
 @dataclass(frozen=True)
 class ExpressionStatement(Statement):
     expression: Expression
+
+
+@dataclass(frozen=True)
+class AssignmentStatement(Statement):
+    target: Expression
+    operator: str
+    value: Expression
+
+
+@dataclass(frozen=True)
+class Parameter:
+    name: str
+    annotation: Optional[str] = None
+    default: Optional[Expression] = None
+
+
+@dataclass(frozen=True)
+class FunctionDefinition(Statement):
+    name: str
+    parameters: List[Parameter]
+    return_annotation: Optional[str]
+    body: List[Statement]
+
+
+@dataclass(frozen=True)
+class IfStatement(Statement):
+    condition: Expression
+    body: List[Statement]
+    elif_branches: List[Tuple[Expression, List[Statement]]]
+    else_body: Optional[List[Statement]]
+
+
+@dataclass(frozen=True)
+class WhileStatement(Statement):
+    condition: Expression
+    body: List[Statement]
+
+
+@dataclass(frozen=True)
+class ForStatement(Statement):
+    variable: str
+    iterable: Expression
+    body: List[Statement]
 
 
 @dataclass(frozen=True)
