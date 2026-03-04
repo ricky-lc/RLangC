@@ -11,6 +11,7 @@ from rlangc.frontend.ast import (
     LetStatement,
     Literal,
     ReturnStatement,
+    UnaryExpression,
     WhileStatement,
 )
 from rlangc.frontend.lexer import tokenize
@@ -88,6 +89,17 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(expr.right.operator, "*")
         self.assertIsInstance(expr.right.right, Literal)
         self.assertEqual(expr.right.right.value, 2)
+
+    def test_parse_unary_bitwise_not(self) -> None:
+        module = parse(tokenize("let inverted = ~mask"))
+        self.assertEqual(len(module.statements), 1)
+        stmt = module.statements[0]
+        self.assertIsInstance(stmt, LetStatement)
+        self.assertEqual(stmt.name, "inverted")
+        self.assertIsInstance(stmt.value, UnaryExpression)
+        self.assertEqual(stmt.value.operator, "~")
+        self.assertIsInstance(stmt.value.operand, Identifier)
+        self.assertEqual(stmt.value.operand.name, "mask")
 
 
 if __name__ == "__main__":

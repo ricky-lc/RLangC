@@ -3,6 +3,8 @@ from typing import List
 
 from rlangc.frontend.ast import Token
 
+_TAB_WIDTH = 4
+
 
 def tokenize(source: str) -> List[Token]:
     tokens: List[Token] = []
@@ -15,7 +17,8 @@ def tokenize(source: str) -> List[Token]:
         if not stripped_line or stripped_line.startswith("#"):
             continue
 
-        indent_width = _indent_width(raw_line[: len(raw_line) - len(stripped_line)])
+        leading_whitespace = raw_line[: len(raw_line) - len(stripped_line)]
+        indent_width = _indent_width(leading_whitespace)
         if brace_depth == 0:
             if indent_width > indent_stack[-1]:
                 indent_stack.append(indent_width)
@@ -75,7 +78,7 @@ def _indent_width(prefix: str) -> int:
         if char == " ":
             width += 1
         elif char == "\t":
-            width += 4
+            width += _TAB_WIDTH
         else:
             break
     return width

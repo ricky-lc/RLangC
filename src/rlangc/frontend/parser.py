@@ -100,9 +100,7 @@ class _Parser:
         self._advance()
         if self._is_at_end():
             return ReturnStatement(value=None)
-        next_token = self._peek_optional()
-        if next_token is None:
-            return ReturnStatement(value=None)
+        next_token = self._peek()
         if next_token.kind in {"NEWLINE", "DEDENT"} or (next_token.kind == "PUNCT" and next_token.value == "}"):
             return ReturnStatement(value=None)
         return ReturnStatement(value=self._parse_expression())
@@ -172,26 +170,26 @@ class _Parser:
 
     def _parse_block(self) -> List[Statement]:
         if self._match("PUNCT", "{"):
-            statements: List[Statement] = []
+            brace_statements: List[Statement] = []
             self._consume_newlines()
             while not self._match("PUNCT", "}"):
                 if self._is_at_end():
                     raise ParseError("Unterminated brace block")
-                statements.append(self._parse_statement())
+                brace_statements.append(self._parse_statement())
                 self._consume_newlines()
-            return statements
+            return brace_statements
 
         self._expect("PUNCT", "Expected block opener ':' or '{'", expected_value=":")
         if self._match("NEWLINE"):
             self._expect("INDENT", "Expected indented block after ':'")
-            statements: List[Statement] = []
+            indent_statements: List[Statement] = []
             self._consume_newlines()
             while not self._match("DEDENT"):
                 if self._is_at_end():
                     raise ParseError("Unterminated indented block")
-                statements.append(self._parse_statement())
+                indent_statements.append(self._parse_statement())
                 self._consume_newlines()
-            return statements
+            return indent_statements
         return [self._parse_statement()]
 
     def _parse_expression(self, min_precedence: int = 1) -> Expression:
