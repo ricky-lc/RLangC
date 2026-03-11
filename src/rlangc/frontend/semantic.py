@@ -237,7 +237,7 @@ class _SemanticAnalyzer:
         if operator == "+" and left_type == right_type == "list":
             return "list"
         raise SemanticError(
-            f"Unsupported operand types for {operator!r}: {left_type!r} and {right_type!r}"
+            f"Unsupported operand types in binary expression for {operator!r}: {left_type!r} and {right_type!r}"
         )
 
     def _is_assignable(self, expected: Optional[str], actual: Optional[str]) -> bool:
