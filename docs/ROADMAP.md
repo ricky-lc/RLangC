@@ -73,16 +73,16 @@ The MVL focuses on a compact, usable core:
 ## Phase 4: Semantic Analysis 📋
 
 ### Tasks
-- [ ] Symbol table implementation
-- [ ] Scope management
+- [x] Symbol table implementation
+- [x] Scope management
 - [ ] Type inference engine
 - [ ] Type checking rules
-- [ ] Const reassignment detection
-- [ ] Undefined variable detection
+- [x] Const reassignment detection
+- [x] Undefined variable detection
 - [ ] Type compatibility checking
 
 ### Testing
-- [ ] Semantic error detection
+- [x] Semantic error detection
 - [ ] Type inference accuracy
 - [ ] Scope resolution tests
 
