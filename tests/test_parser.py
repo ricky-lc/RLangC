@@ -101,6 +101,18 @@ class ParserTests(unittest.TestCase):
         self.assertIsInstance(stmt.value.operand, Identifier)
         self.assertEqual(stmt.value.operand.name, "mask")
 
+    def test_parse_none_type_annotations(self) -> None:
+        source = "def log(value: str) -> none:\n    return\nlet marker: none = none\n"
+        module = parse(tokenize(source))
+        self.assertEqual(len(module.statements), 2)
+        func = module.statements[0]
+        self.assertIsInstance(func, FunctionDefinition)
+        self.assertEqual(func.return_annotation, "none")
+        self.assertEqual(func.parameters[0].annotation, "str")
+        binding = module.statements[1]
+        self.assertIsInstance(binding, LetStatement)
+        self.assertEqual(binding.annotation, "none")
+
 
 if __name__ == "__main__":
     unittest.main()

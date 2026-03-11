@@ -27,6 +27,23 @@ class SemanticAnalysisTests(unittest.TestCase):
         )
         self.assertIsNotNone(pipeline.run(source))
 
+    def test_pipeline_rejects_function_return_type_mismatch(self) -> None:
+        source = "def get_name() -> str:\n    return 42\n"
+        with self.assertRaisesRegex(SemanticError, "Cannot return value of type 'int'"):
+            pipeline.run(source)
+
+    def test_pipeline_allows_matching_function_return_type(self) -> None:
+        source = "def get_count() -> int:\n    return 42\n"
+        self.assertIsNotNone(pipeline.run(source))
+
+    def test_pipeline_allows_int_to_float_return_widening(self) -> None:
+        source = "def ratio() -> float:\n    return 42\n"
+        self.assertIsNotNone(pipeline.run(source))
+
+    def test_pipeline_allows_none_return_for_none_annotation(self) -> None:
+        source = "def log() -> none:\n    return\n"
+        self.assertIsNotNone(pipeline.run(source))
+
 
 if __name__ == "__main__":
     unittest.main()

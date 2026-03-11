@@ -66,6 +66,7 @@ class _SemanticAnalyzer:
 
     def __init__(self) -> None:
         self._scope = _Scope()
+        self._return_types: List[Optional[str]] = []
         for symbol in self._BUILTINS.values():
             self._scope.define(symbol)
 
@@ -114,8 +115,14 @@ class _SemanticAnalyzer:
             return
 
         if isinstance(statement, ReturnStatement):
+            value_type = "none"
             if statement.value is not None:
-                self._analyze_expression(statement.value)
+                value_type = self._analyze_expression(statement.value)
+            current_return_type = self._current_return_type()
+            if current_return_type is not None and not self._is_assignable(current_return_type, value_type):
+                raise SemanticError(
+                    f"Cannot return value of type {value_type!r} from function declared as {current_return_type!r}"
+                )
             return
 
         if isinstance(statement, FunctionDefinition):
@@ -125,11 +132,13 @@ class _SemanticAnalyzer:
                     self._analyze_expression(parameter.default)
             previous_scope = self._scope
             self._scope = _Scope(parent=previous_scope)
+            self._return_types.append(statement.return_annotation)
             try:
                 for parameter in statement.parameters:
                     self._scope.define(Symbol(name=parameter.name, is_const=False, type_name=parameter.annotation))
                 self._analyze_statements(statement.body, create_scope=False)
             finally:
+                self._return_types.pop()
                 self._scope = previous_scope
             return
 
@@ -209,6 +218,11 @@ class _SemanticAnalyzer:
         if symbol is None:
             raise SemanticError(f"Undefined variable {name!r}")
         return symbol
+
+    def _current_return_type(self) -> Optional[str]:
+        if not self._return_types:
+            return None
+        return self._return_types[-1]
 
     def _infer_literal_type(self, value: object) -> str:
         if value is None:
