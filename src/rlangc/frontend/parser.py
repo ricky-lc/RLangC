@@ -5,6 +5,7 @@ from rlangc.frontend.ast import (
     AttributeExpression,
     BinaryExpression,
     CallExpression,
+    ClassDefinition,
     Expression,
     ExpressionStatement,
     ForStatement,
@@ -23,6 +24,7 @@ from rlangc.frontend.ast import (
     UnaryExpression,
     WhileStatement,
     DictLiteral,
+    NamedArgument,
 )
 
 
@@ -71,6 +73,8 @@ class _Parser:
                 return self._parse_return_statement()
             if token.value == "def":
                 return self._parse_function_definition()
+            if token.value == "class":
+                return self._parse_class_definition()
             if token.value == "if":
                 return self._parse_if_statement()
             if token.value == "while":
@@ -122,6 +126,20 @@ class _Parser:
             return_annotation=return_annotation,
             body=body,
         )
+
+    def _parse_class_definition(self) -> ClassDefinition:
+        self._advance()
+        name = self._expect("IDENTIFIER", "Expected class name after 'class'").value
+        bases: List[str] = []
+        if self._match("PUNCT", "("):
+            if not self._check("PUNCT", ")"):
+                while True:
+                    bases.append(self._expect("IDENTIFIER", "Expected base class name").value)
+                    if not self._match("PUNCT", ","):
+                        break
+            self._expect("PUNCT", "Expected ')' after base class list", expected_value=")")
+        body = self._parse_block()
+        return ClassDefinition(name=name, bases=bases, body=body)
 
     def _parse_parameters(self) -> List[Parameter]:
         parameters: List[Parameter] = []
@@ -181,7 +199,8 @@ class _Parser:
 
         self._expect("PUNCT", "Expected block opener ':' or '{'", expected_value=":")
         if self._match("NEWLINE"):
-            self._expect("INDENT", "Expected indented block after ':'")
+            if not self._match("INDENT"):
+                return [self._parse_statement()]
             indent_statements: List[Statement] = []
             self._consume_newlines()
             while not self._match("DEDENT"):
@@ -225,7 +244,12 @@ class _Parser:
                 args: List[Expression] = []
                 if not self._check("PUNCT", ")"):
                     while True:
-                        args.append(self._parse_expression())
+                        if self._check("IDENTIFIER") and self._check_next("OPERATOR", "="):
+                            name = self._advance().value
+                            self._advance()
+                            args.append(NamedArgument(name=name, value=self._parse_expression()))
+                        else:
+                            args.append(self._parse_expression())
                         if not self._match("PUNCT", ","):
                             break
                 self._expect("PUNCT", "Expected ')' after function arguments", expected_value=")")
@@ -282,17 +306,20 @@ class _Parser:
         if token.kind == "PUNCT" and token.value == "{":
             self._advance()
             entries: List[Tuple[Expression, Expression]] = []
+            self._consume_newlines()
             if not self._check("PUNCT", "}"):
                 while True:
                     key = self._parse_expression()
                     self._expect("PUNCT", "Expected ':' in dictionary literal", expected_value=":")
                     value = self._parse_expression()
                     entries.append((key, value))
+                    self._consume_newlines()
                     if not self._match("PUNCT", ","):
                         break
+                    self._consume_newlines()
             self._expect("PUNCT", "Expected '}' after dictionary literal", expected_value="}")
             return DictLiteral(entries=entries)
-        raise ParseError(f"Unexpected token: {token.kind} {token.value!r}")
+        self._error(f"Unexpected token: {token.kind} {token.value!r}")
 
     def _binary_operator(self, token: Optional[Token]) -> Optional[str]:
         if token is None:
@@ -332,13 +359,23 @@ class _Parser:
     def _peek(self) -> Token:
         token = self._peek_optional()
         if token is None:
-            raise ParseError("Unexpected end of input")
+            self._error("Unexpected end of input")
         return token
 
     def _peek_optional(self) -> Optional[Token]:
         if self._is_at_end():
             return None
         return self._tokens[self._index]
+
+    def _check_next(self, kind: str, value: Optional[str] = None) -> bool:
+        if self._index + 1 >= len(self._tokens):
+            return False
+        token = self._tokens[self._index + 1]
+        if token.kind != kind:
+            return False
+        if value is not None and token.value != value:
+            return False
+        return True
 
     def _advance(self) -> Token:
         token = self._peek()
@@ -348,9 +385,9 @@ class _Parser:
     def _expect(self, kind: str, message: str, expected_value: Optional[str] = None) -> Token:
         token = self._peek()
         if token.kind != kind:
-            raise ParseError(message)
+            self._error(message)
         if expected_value is not None and token.value != expected_value:
-            raise ParseError(message)
+            self._error(message)
         return self._advance()
 
     def _match(self, kind: str, value: Optional[str] = None) -> bool:
@@ -361,6 +398,14 @@ class _Parser:
 
     def _is_at_end(self) -> bool:
         return self._index >= len(self._tokens)
+
+    def _error(self, message: str) -> None:
+        token = self._peek_optional()
+        if token is None:
+            raise ParseError(f"{message} at end of input")
+        raise ParseError(
+            f"{message} at token index {self._index} ({token.kind} {token.value!r})"
+        )
 
 
 def parse(tokens: List[Token]) -> Module:

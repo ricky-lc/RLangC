@@ -103,6 +103,7 @@ _KEYWORDS = {
     "none",
     "import",
     "as",
+    "class",
 }
 
 _TOKEN_RE = re.compile(

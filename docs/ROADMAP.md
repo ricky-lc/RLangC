@@ -53,7 +53,7 @@ The MVL focuses on a compact, usable core:
 - [x] Indentation edge cases
 - [x] Error recovery tests
 
-## Phase 3: Parser Implementation 🚧
+## Phase 3: Parser Implementation ✅
 
 ### Tasks
 - [x] AST node definitions
@@ -61,14 +61,14 @@ The MVL focuses on a compact, usable core:
 - [x] Expression parsing with precedence
 - [x] Statement parsing
 - [x] Function declaration parsing
-- [ ] Class declaration parsing
+- [x] Class declaration parsing
 - [x] Both syntax style support (indent/brace)
-- [ ] Error recovery and reporting
+- [x] Error recovery and reporting
 
 ### Testing
-- [ ] Parse example programs
-- [ ] Syntax error detection
-- [ ] AST correctness verification
+- [x] Parse example programs
+- [x] Syntax error detection
+- [x] AST correctness verification
 
 ## Phase 4: Semantic Analysis 📋
 
@@ -254,9 +254,9 @@ The MVL focuses on a compact, usable core:
 
 ## Current Status
 
-**Active Phase**: Phase 3 (Parser Implementation)  
-**Next Phase**: Phase 4 (Semantic Analysis)  
-**Overall Progress**: ~15% complete
+**Active Phase**: Phase 4 (Semantic Analysis)  
+**Next Phase**: Phase 5 (IR Generation)  
+**Overall Progress**: ~20% complete
 
 ## Success Criteria
 
