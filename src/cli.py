@@ -24,14 +24,22 @@ def _build_parser() -> argparse.ArgumentParser:
 
 def _run_check(path: Path) -> int:
     source = path.read_text(encoding="utf-8")
-    pipeline.run(source)
+    try:
+        pipeline.run(source)
+    except ValueError as exc:
+        print(f"{path}: error: {exc}", file=sys.stderr)
+        return 1
     print(f"{path}: OK")
     return 0
 
 
 def _run_compile(path: Path, output: Path, cc: str) -> int:
     source = path.read_text(encoding="utf-8")
-    module = pipeline.run(source)
+    try:
+        module = pipeline.run(source)
+    except ValueError as exc:
+        print(f"{path}: error: {exc}", file=sys.stderr)
+        return 1
     c_source = generate_c(module)
     with tempfile.NamedTemporaryFile("w", suffix=".c", encoding="utf-8", delete=False) as c_file:
         c_file.write(c_source)

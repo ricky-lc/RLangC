@@ -1,5 +1,6 @@
 import tempfile
 import unittest
+from io import StringIO
 from pathlib import Path
 from unittest.mock import patch
 
@@ -27,6 +28,15 @@ class CliCompileTests(unittest.TestCase):
         command = mock_run.call_args[0][0]
         self.assertEqual(command[0], "cc")
         self.assertEqual(command[-3:], ["-O2", "-o", str(output_path)])
+
+    def test_run_check_reports_semantic_errors_cleanly(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            source_path = Path(td) / "program.rl"
+            source_path.write_text("const x = 1\nx = 2\n", encoding="utf-8")
+            with patch("sys.stderr", new_callable=StringIO) as stderr:
+                exit_code = cli._run_check(source_path)
+        self.assertEqual(exit_code, 1)
+        self.assertIn("error: Cannot reassign const binding 'x'", stderr.getvalue())
 
 
 if __name__ == "__main__":

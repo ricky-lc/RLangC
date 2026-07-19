@@ -91,7 +91,7 @@ class _Parser:
         name_token = self._expect("IDENTIFIER", "Expected identifier after binding keyword")
         annotation = None
         if self._match("PUNCT", ":"):
-            annotation = self._expect("IDENTIFIER", "Expected type annotation after ':'").value
+            annotation = self._parse_type_name("Expected type annotation after ':'")
         self._expect("OPERATOR", "Expected '=' after binding name", expected_value="=")
         value = self._parse_expression()
         return LetStatement(name=name_token.value, value=value, is_const=is_const, annotation=annotation)
@@ -114,7 +114,7 @@ class _Parser:
         return_annotation = None
         if self._match("OPERATOR", "-"):
             self._expect("OPERATOR", "Expected '->' return type annotation", expected_value=">")
-            return_annotation = self._expect("IDENTIFIER", "Expected return type name after '->'").value
+            return_annotation = self._parse_type_name("Expected return type name after '->'")
         body = self._parse_block()
         return FunctionDefinition(
             name=name,
@@ -132,7 +132,7 @@ class _Parser:
             annotation = None
             default = None
             if self._match("PUNCT", ":"):
-                annotation = self._expect("IDENTIFIER", "Expected parameter type after ':'").value
+                annotation = self._parse_type_name("Expected parameter type after ':'")
             if self._match("OPERATOR", "="):
                 default = self._parse_expression()
             parameters.append(Parameter(name=param_name, annotation=annotation, default=default))
@@ -302,6 +302,14 @@ class _Parser:
         if token.kind == "KEYWORD" and token.value in {"and", "or"}:
             return token.value
         return None
+
+    def _parse_type_name(self, message: str) -> str:
+        token = self._peek()
+        if token.kind == "IDENTIFIER":
+            return self._advance().value
+        if token.kind == "KEYWORD" and token.value == "none":
+            return self._advance().value
+        raise ParseError(message)
 
     def _consume_newlines(self) -> None:
         while self._match("NEWLINE"):
