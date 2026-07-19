@@ -47,7 +47,7 @@ def greet(name) {             # Braces
 
 ### Installation (Developer Bootstrap)
 ```bash
-pip install rlangc
+pip install .
 ```
 
 ### Hello World
@@ -191,8 +191,8 @@ RLangC/
 ├── spec/           # Language specification
 ├── examples/       # Example programs
 ├── docs/           # Documentation
-├── src/            # Implementation (to be added)
-└── tests/          # Test suite (to be added)
+├── src/            # Compiler frontend, IR, backends, runtime, and CLI
+└── tests/          # Unit tests for lexer, parser, and CLI compilation flow
 ```
 
 ## Examples
@@ -206,20 +206,20 @@ See the `examples/` directory for complete programs demonstrating:
 
 ## Development Status
 
-RLangC is in active design and development. The language specification is complete, and implementation is progressing incrementally with focus on:
+RLangC is in active design and development. The language specification is complete, and a baseline implementation is in place:
 
 1. ✅ Core language design
 2. ✅ Specification documentation
-3. 🚧 Lexer and parser implementation
-4. 🚧 Type system and semantic analysis
-5. 📋 Bytecode interpreter
-6. 📋 C code generation backend
-7. 📋 Runtime library
+3. ✅ Lexer and parser implementation
+4. 🚧 Type system and semantic analysis expansion
+5. 🚧 Bytecode interpreter scaffolding
+6. ✅ C code generation backend scaffold
+7. 🚧 Runtime library
 8. 📋 Standard library
 
 ## Contributing
 
-The language design welcomes feedback and suggestions. See CONTRIBUTING.md for details.
+The language design welcomes feedback and suggestions. Open an issue or pull request to contribute improvements.
 
 ## License
 
@@ -227,7 +227,7 @@ Proprietary - see [`LICENSE`](LICENSE).
 
 ## Contact
 
-[Project details to be added]
+Use repository issues for questions and discussion.
 
 ---
 
