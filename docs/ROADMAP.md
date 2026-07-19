@@ -70,21 +70,21 @@ The MVL focuses on a compact, usable core:
 - [x] Syntax error detection
 - [x] AST correctness verification
 
-## Phase 4: Semantic Analysis 📋
+## Phase 4: Semantic Analysis 🚧
 
 ### Tasks
-- [ ] Symbol table implementation
-- [ ] Scope management
-- [ ] Type inference engine
-- [ ] Type checking rules
-- [ ] Const reassignment detection
-- [ ] Undefined variable detection
-- [ ] Type compatibility checking
+- [x] Symbol table implementation
+- [x] Scope management
+- [x] Type inference engine
+- [x] Type checking rules
+- [x] Const reassignment detection
+- [x] Undefined variable detection
+- [x] Type compatibility checking
 
 ### Testing
-- [ ] Semantic error detection
+- [x] Semantic error detection
 - [ ] Type inference accuracy
-- [ ] Scope resolution tests
+- [x] Scope resolution tests
 
 ## Phase 5: IR Generation 📋
 
@@ -254,9 +254,9 @@ The MVL focuses on a compact, usable core:
 
 ## Current Status
 
-**Active Phase**: Phase 4 (Semantic Analysis)  
+**Active Phase**: Phase 4 (Semantic Analysis, in progress)  
 **Next Phase**: Phase 5 (IR Generation)  
-**Overall Progress**: ~20% complete
+**Overall Progress**: ~28% complete
 
 ## Success Criteria
 
