@@ -36,7 +36,7 @@ The MVL focuses on a compact, usable core:
 6. **Standard Library**: core collections, I/O, networking
 7. **Async Runtime**: event loop, tasks, futures
 
-## Phase 2: Lexer Implementation 🚧
+## Phase 2: Lexer Implementation ✅
 
 ### Tasks
 - [x] Token definitions
@@ -49,9 +49,9 @@ The MVL focuses on a compact, usable core:
 - [x] Error reporting with location
 
 ### Testing
-- [ ] Unit tests for each token type
-- [ ] Indentation edge cases
-- [ ] Error recovery tests
+- [x] Unit tests for each token type
+- [x] Indentation edge cases
+- [x] Error recovery tests
 
 ## Phase 3: Parser Implementation 🚧
 
@@ -254,9 +254,9 @@ The MVL focuses on a compact, usable core:
 
 ## Current Status
 
-**Active Phase**: Phase 1 (Core Foundation) - Complete  
-**Next Phase**: Phase 2 (Lexer Implementation)  
-**Overall Progress**: ~10% complete
+**Active Phase**: Phase 3 (Parser Implementation)  
+**Next Phase**: Phase 4 (Semantic Analysis)  
+**Overall Progress**: ~15% complete
 
 ## Success Criteria
 

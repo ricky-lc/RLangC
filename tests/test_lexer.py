@@ -67,6 +67,60 @@ class LexerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "line 2, column 1"):
             tokenize("let x = 1\n€")
 
+    def test_tokenize_supports_all_defined_operator_tokens(self) -> None:
+        source = "a ** b // c == d != e <= f >= g << h >> i += j -= k *= l /= m %= n + o - p * q / r % s = t < u > v & w | x ^ y ~z"
+        tokens = tokenize(source)
+        operators = [token.value for token in tokens if token.kind == "OPERATOR"]
+        self.assertEqual(
+            operators,
+            [
+                "**",
+                "//",
+                "==",
+                "!=",
+                "<=",
+                ">=",
+                "<<",
+                ">>",
+                "+=",
+                "-=",
+                "*=",
+                "/=",
+                "%=",
+                "+",
+                "-",
+                "*",
+                "/",
+                "%",
+                "=",
+                "<",
+                ">",
+                "&",
+                "|",
+                "^",
+                "~",
+            ],
+        )
+
+    def test_tokenize_handles_tab_indentation(self) -> None:
+        source = "if true:\n\tlet x = 1\nlet y = 2\n"
+        tokens = tokenize(source)
+        self.assertEqual(tokens[4].kind, "INDENT")
+        self.assertEqual(tokens[10].kind, "DEDENT")
+
+    def test_tokenize_raises_on_inconsistent_indentation(self) -> None:
+        source = "if true:\n    let x = 1\n  let y = 2\n"
+        with self.assertRaisesRegex(ValueError, "Inconsistent indentation at line 3"):
+            tokenize(source)
+
+    def test_tokenize_raises_on_unterminated_brace_block(self) -> None:
+        with self.assertRaisesRegex(ValueError, "Unterminated brace block"):
+            tokenize("if true {\n    let x = 1\n")
+
+    def test_tokenize_raises_on_unexpected_closing_brace(self) -> None:
+        with self.assertRaisesRegex(ValueError, "Unexpected '\\}' at line 1"):
+            tokenize("}")
+
 
 if __name__ == "__main__":
     unittest.main()
