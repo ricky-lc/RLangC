@@ -9,6 +9,7 @@ from rlangc.frontend.ast import (
     FunctionDefinition,
     Identifier,
     IfStatement,
+    KeywordArgument,
     ImportStatement,
     LetStatement,
     Literal,
@@ -125,6 +126,13 @@ class ParserTests(unittest.TestCase):
     def test_parse_call_with_keyword_argument(self) -> None:
         module = parse(tokenize('print(str(1), end="")'))
         self.assertEqual(len(module.statements), 1)
+        stmt = module.statements[0]
+        self.assertTrue(hasattr(stmt, "expression"))
+        call = stmt.expression
+        self.assertIsInstance(call, CallExpression)
+        self.assertEqual(len(call.arguments), 2)
+        self.assertIsInstance(call.arguments[1], KeywordArgument)
+        self.assertEqual(call.arguments[1].name, "end")
 
     def test_parse_multiline_dictionary_literal(self) -> None:
         source = 'let data = {\n    "x": 1,\n    "y": 2\n}\n'

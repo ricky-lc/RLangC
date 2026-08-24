@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 from rlangc.frontend.ast import (
     AssignmentStatement,
@@ -17,6 +17,7 @@ from rlangc.frontend.ast import (
     LetStatement,
     Literal,
     Module,
+    KeywordArgument,
     Parameter,
     ReturnStatement,
     Statement,
@@ -244,13 +245,13 @@ class _Parser:
         expr = self._parse_primary()
         while True:
             if self._match("PUNCT", "("):
-                args: List[Expression] = []
+                args: List[Union[Expression, KeywordArgument]] = []
                 if not self._check("PUNCT", ")"):
                     while True:
                         if self._check("IDENTIFIER") and self._check_next("OPERATOR", "="):
+                            name = self._advance().value
                             self._advance()
-                            self._advance()
-                            args.append(self._parse_expression())
+                            args.append(KeywordArgument(name=name, value=self._parse_expression()))
                         else:
                             args.append(self._parse_expression())
                         if not self._match("PUNCT", ","):
