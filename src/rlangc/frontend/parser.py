@@ -11,6 +11,7 @@ from rlangc.frontend.ast import (
     FunctionDefinition,
     Identifier,
     IfStatement,
+    ImportStatement,
     IndexExpression,
     ListLiteral,
     LetStatement,
@@ -77,6 +78,13 @@ class _Parser:
                 return self._parse_while_statement()
             if token.value == "for":
                 return self._parse_for_statement()
+            if token.value == "import":
+                return self._parse_import_statement()
+            if token.value == "async":
+                if self._check_next("KEYWORD", "def"):
+                    self._advance()
+                    return self._parse_function_definition(is_async=True)
+                raise ParseError("Expected 'def' after 'async'")
 
         expr = self._parse_expression()
         if self._is_assignment_operator(self._peek_optional()):
@@ -105,8 +113,8 @@ class _Parser:
             return ReturnStatement(value=None)
         return ReturnStatement(value=self._parse_expression())
 
-    def _parse_function_definition(self) -> FunctionDefinition:
-        self._advance()
+    def _parse_function_definition(self, *, is_async: bool = False) -> FunctionDefinition:
+        self._expect("KEYWORD", "Expected 'def' in function definition", expected_value="def")
         name = self._expect("IDENTIFIER", "Expected function name after 'def'").value
         self._expect("PUNCT", "Expected '(' after function name", expected_value="(")
         parameters = self._parse_parameters()
@@ -121,7 +129,18 @@ class _Parser:
             parameters=parameters,
             return_annotation=return_annotation,
             body=body,
+            is_async=is_async,
         )
+
+    def _parse_import_statement(self) -> ImportStatement:
+        self._advance()
+        module_parts = [self._expect("IDENTIFIER", "Expected module name after 'import'").value]
+        while self._match("PUNCT", "."):
+            module_parts.append(self._expect("IDENTIFIER", "Expected module path segment after '.'").value)
+        alias = None
+        if self._match("KEYWORD", "as"):
+            alias = self._expect("IDENTIFIER", "Expected import alias after 'as'").value
+        return ImportStatement(module=".".join(module_parts), alias=alias)
 
     def _parse_parameters(self) -> List[Parameter]:
         parameters: List[Parameter] = []
@@ -216,6 +235,9 @@ class _Parser:
         if token.kind == "KEYWORD" and token.value == "not":
             self._advance()
             return UnaryExpression(operator="not", operand=self._parse_unary())
+        if token.kind == "KEYWORD" and token.value == "await":
+            self._advance()
+            return UnaryExpression(operator="await", operand=self._parse_unary())
         return self._parse_postfix()
 
     def _parse_postfix(self) -> Expression:
@@ -225,7 +247,12 @@ class _Parser:
                 args: List[Expression] = []
                 if not self._check("PUNCT", ")"):
                     while True:
-                        args.append(self._parse_expression())
+                        if self._check("IDENTIFIER") and self._check_next("OPERATOR", "="):
+                            self._advance()
+                            self._advance()
+                            args.append(self._parse_expression())
+                        else:
+                            args.append(self._parse_expression())
                         if not self._match("PUNCT", ","):
                             break
                 self._expect("PUNCT", "Expected ')' after function arguments", expected_value=")")
@@ -282,14 +309,17 @@ class _Parser:
         if token.kind == "PUNCT" and token.value == "{":
             self._advance()
             entries: List[Tuple[Expression, Expression]] = []
+            self._consume_newlines()
             if not self._check("PUNCT", "}"):
                 while True:
                     key = self._parse_expression()
                     self._expect("PUNCT", "Expected ':' in dictionary literal", expected_value=":")
                     value = self._parse_expression()
                     entries.append((key, value))
+                    self._consume_newlines()
                     if not self._match("PUNCT", ","):
                         break
+                    self._consume_newlines()
             self._expect("PUNCT", "Expected '}' after dictionary literal", expected_value="}")
             return DictLiteral(entries=entries)
         raise ParseError(f"Unexpected token: {token.kind} {token.value!r}")
@@ -339,6 +369,16 @@ class _Parser:
         if self._is_at_end():
             return None
         return self._tokens[self._index]
+
+    def _check_next(self, kind: str, value: Optional[str] = None) -> bool:
+        if self._index + 1 >= len(self._tokens):
+            return False
+        token = self._tokens[self._index + 1]
+        if token.kind != kind:
+            return False
+        if value is not None and token.value != value:
+            return False
+        return True
 
     def _advance(self) -> Token:
         token = self._peek()

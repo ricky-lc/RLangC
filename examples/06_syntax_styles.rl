@@ -33,10 +33,11 @@ def calculate_stats(numbers) {
     let sum = 0
     let count = 0
     
-    for num in numbers:
+    for num in numbers {
         sum += num
         count += 1
-    
+    }
+
     let average = sum / count
     return average
 }

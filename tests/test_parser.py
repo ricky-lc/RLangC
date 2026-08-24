@@ -4,10 +4,12 @@ from rlangc.frontend.ast import (
     AssignmentStatement,
     BinaryExpression,
     CallExpression,
+    DictLiteral,
     ForStatement,
     FunctionDefinition,
     Identifier,
     IfStatement,
+    ImportStatement,
     LetStatement,
     Literal,
     ReturnStatement,
@@ -100,6 +102,38 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(stmt.value.operator, "~")
         self.assertIsInstance(stmt.value.operand, Identifier)
         self.assertEqual(stmt.value.operand.name, "mask")
+
+    def test_parse_import_with_alias(self) -> None:
+        module = parse(tokenize("import net.http as http"))
+        self.assertEqual(len(module.statements), 1)
+        stmt = module.statements[0]
+        self.assertIsInstance(stmt, ImportStatement)
+        self.assertEqual(stmt.module, "net.http")
+        self.assertEqual(stmt.alias, "http")
+
+    def test_parse_async_function_and_await_expression(self) -> None:
+        source = "async def fetch(url):\n    return await http.get(url)\n"
+        module = parse(tokenize(source))
+        self.assertEqual(len(module.statements), 1)
+        stmt = module.statements[0]
+        self.assertIsInstance(stmt, FunctionDefinition)
+        self.assertTrue(stmt.is_async)
+        self.assertIsInstance(stmt.body[0], ReturnStatement)
+        self.assertIsInstance(stmt.body[0].value, UnaryExpression)
+        self.assertEqual(stmt.body[0].value.operator, "await")
+
+    def test_parse_call_with_keyword_argument(self) -> None:
+        module = parse(tokenize('print(str(1), end="")'))
+        self.assertEqual(len(module.statements), 1)
+
+    def test_parse_multiline_dictionary_literal(self) -> None:
+        source = 'let data = {\n    "x": 1,\n    "y": 2\n}\n'
+        module = parse(tokenize(source))
+        self.assertEqual(len(module.statements), 1)
+        stmt = module.statements[0]
+        self.assertIsInstance(stmt, LetStatement)
+        self.assertIsInstance(stmt.value, DictLiteral)
+        self.assertEqual(len(stmt.value.entries), 2)
 
 
 if __name__ == "__main__":

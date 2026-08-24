@@ -107,6 +107,13 @@ class FunctionDefinition(Statement):
     parameters: List[Parameter]
     return_annotation: Optional[str]
     body: List[Statement]
+    is_async: bool = False
+
+
+@dataclass(frozen=True)
+class ImportStatement(Statement):
+    module: str
+    alias: Optional[str] = None
 
 
 @dataclass(frozen=True)
