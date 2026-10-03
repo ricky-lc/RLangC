@@ -89,14 +89,14 @@ The MVL focuses on a compact, usable core:
 ## Phase 5: IR Generation 📋
 
 ### Tasks
-- [ ] IR instruction set design
-- [ ] AST to IR transformation
+- [x] IR instruction set design
+- [x] AST to IR transformation
 - [ ] Control flow graph construction
 - [ ] SSA form generation (optional)
 - [ ] Basic optimizations
 
 ### Testing
-- [ ] IR correctness
+- [x] IR correctness
 - [ ] Optimization verification
 - [ ] Round-trip testing
 
