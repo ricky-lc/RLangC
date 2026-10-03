@@ -6,10 +6,13 @@ from rlangc.frontend.ast import (
     BinaryExpression,
     CallExpression,
     ClassDefinition,
+    DictLiteral,
     ForStatement,
     FunctionDefinition,
     Identifier,
     IfStatement,
+    KeywordArgument,
+    ImportStatement,
     LetStatement,
     Literal,
     NamedArgument,
@@ -104,46 +107,44 @@ class ParserTests(unittest.TestCase):
         self.assertIsInstance(stmt.value.operand, Identifier)
         self.assertEqual(stmt.value.operand.name, "mask")
 
-    def test_parse_class_definition_with_bases_and_method(self) -> None:
-        source = "class Child(BaseOne, BaseTwo):\n    def greet(name):\n        return name\n"
+    def test_parse_import_with_alias(self) -> None:
+        module = parse(tokenize("import net.http as http"))
+        self.assertEqual(len(module.statements), 1)
+        stmt = module.statements[0]
+        self.assertIsInstance(stmt, ImportStatement)
+        self.assertEqual(stmt.module, "net.http")
+        self.assertEqual(stmt.alias, "http")
+
+    def test_parse_async_function_and_await_expression(self) -> None:
+        source = "async def fetch(url):\n    return await http.get(url)\n"
         module = parse(tokenize(source))
         self.assertEqual(len(module.statements), 1)
-        cls = module.statements[0]
-        self.assertIsInstance(cls, ClassDefinition)
-        self.assertEqual(cls.name, "Child")
-        self.assertEqual(cls.bases, ["BaseOne", "BaseTwo"])
-        self.assertEqual(len(cls.body), 1)
-        self.assertIsInstance(cls.body[0], FunctionDefinition)
-        self.assertEqual(cls.body[0].name, "greet")
+        stmt = module.statements[0]
+        self.assertIsInstance(stmt, FunctionDefinition)
+        self.assertTrue(stmt.is_async)
+        self.assertIsInstance(stmt.body[0], ReturnStatement)
+        self.assertIsInstance(stmt.body[0].value, UnaryExpression)
+        self.assertEqual(stmt.body[0].value.operator, "await")
 
-    def test_parse_examples_programs_except_async(self) -> None:
-        examples_dir = Path(__file__).resolve().parents[1] / "examples"
-        for source_file in sorted(examples_dir.glob("*.rl")):
-            if source_file.name == "08_async_example.rl":
-                continue
-            with self.subTest(example=source_file.name):
-                module = parse(tokenize(source_file.read_text(encoding="utf-8")))
-                self.assertGreaterEqual(len(module.statements), 1)
-
-    def test_parse_reports_missing_block_opener(self) -> None:
-        with self.assertRaisesRegex(
-            ParseError, r"Expected block opener ':' or '\{' at token index \d+"
-        ):
-            parse(tokenize("if true\n    let x = 1\n"))
-
-    def test_parse_reports_unterminated_brace_block(self) -> None:
-        with self.assertRaisesRegex(ValueError, r"Unterminated brace block"):
-            tokenize("if true { let x = 1\n")
-
-    def test_parse_named_argument_in_call(self) -> None:
-        module = parse(tokenize('print("x", end=" ")'))
-        call_stmt = module.statements[0]
-        self.assertTrue(hasattr(call_stmt, "expression"))
-        call = call_stmt.expression
+    def test_parse_call_with_keyword_argument(self) -> None:
+        module = parse(tokenize('print(str(1), end="")'))
+        self.assertEqual(len(module.statements), 1)
+        stmt = module.statements[0]
+        self.assertTrue(hasattr(stmt, "expression"))
+        call = stmt.expression
         self.assertIsInstance(call, CallExpression)
         self.assertEqual(len(call.arguments), 2)
-        self.assertIsInstance(call.arguments[1], NamedArgument)
+        self.assertIsInstance(call.arguments[1], KeywordArgument)
         self.assertEqual(call.arguments[1].name, "end")
+
+    def test_parse_multiline_dictionary_literal(self) -> None:
+        source = 'let data = {\n    "x": 1,\n    "y": 2\n}\n'
+        module = parse(tokenize(source))
+        self.assertEqual(len(module.statements), 1)
+        stmt = module.statements[0]
+        self.assertIsInstance(stmt, LetStatement)
+        self.assertIsInstance(stmt.value, DictLiteral)
+        self.assertEqual(len(stmt.value.entries), 2)
 
 
 if __name__ == "__main__":

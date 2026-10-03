@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 from rlangc.frontend.ast import (
     AssignmentStatement,
@@ -12,11 +12,13 @@ from rlangc.frontend.ast import (
     FunctionDefinition,
     Identifier,
     IfStatement,
+    ImportStatement,
     IndexExpression,
     ListLiteral,
     LetStatement,
     Literal,
     Module,
+    KeywordArgument,
     Parameter,
     ReturnStatement,
     Statement,
@@ -81,6 +83,13 @@ class _Parser:
                 return self._parse_while_statement()
             if token.value == "for":
                 return self._parse_for_statement()
+            if token.value == "import":
+                return self._parse_import_statement()
+            if token.value == "async":
+                if self._check_next("KEYWORD", "def"):
+                    self._advance()
+                    return self._parse_function_definition(is_async=True)
+                raise ParseError("Expected 'def' after 'async'")
 
         expr = self._parse_expression()
         if self._is_assignment_operator(self._peek_optional()):
@@ -109,8 +118,8 @@ class _Parser:
             return ReturnStatement(value=None)
         return ReturnStatement(value=self._parse_expression())
 
-    def _parse_function_definition(self) -> FunctionDefinition:
-        self._advance()
+    def _parse_function_definition(self, *, is_async: bool = False) -> FunctionDefinition:
+        self._expect("KEYWORD", "Expected 'def' in function definition", expected_value="def")
         name = self._expect("IDENTIFIER", "Expected function name after 'def'").value
         self._expect("PUNCT", "Expected '(' after function name", expected_value="(")
         parameters = self._parse_parameters()
@@ -125,21 +134,18 @@ class _Parser:
             parameters=parameters,
             return_annotation=return_annotation,
             body=body,
+            is_async=is_async,
         )
 
-    def _parse_class_definition(self) -> ClassDefinition:
+    def _parse_import_statement(self) -> ImportStatement:
         self._advance()
-        name = self._expect("IDENTIFIER", "Expected class name after 'class'").value
-        bases: List[str] = []
-        if self._match("PUNCT", "("):
-            if not self._check("PUNCT", ")"):
-                while True:
-                    bases.append(self._expect("IDENTIFIER", "Expected base class name").value)
-                    if not self._match("PUNCT", ","):
-                        break
-            self._expect("PUNCT", "Expected ')' after base class list", expected_value=")")
-        body = self._parse_block()
-        return ClassDefinition(name=name, bases=bases, body=body)
+        module_parts = [self._expect("IDENTIFIER", "Expected module name after 'import'").value]
+        while self._match("PUNCT", "."):
+            module_parts.append(self._expect("IDENTIFIER", "Expected module path segment after '.'").value)
+        alias = None
+        if self._match("KEYWORD", "as"):
+            alias = self._expect("IDENTIFIER", "Expected import alias after 'as'").value
+        return ImportStatement(module=".".join(module_parts), alias=alias)
 
     def _parse_parameters(self) -> List[Parameter]:
         parameters: List[Parameter] = []
@@ -235,19 +241,22 @@ class _Parser:
         if token.kind == "KEYWORD" and token.value == "not":
             self._advance()
             return UnaryExpression(operator="not", operand=self._parse_unary())
+        if token.kind == "KEYWORD" and token.value == "await":
+            self._advance()
+            return UnaryExpression(operator="await", operand=self._parse_unary())
         return self._parse_postfix()
 
     def _parse_postfix(self) -> Expression:
         expr = self._parse_primary()
         while True:
             if self._match("PUNCT", "("):
-                args: List[Expression] = []
+                args: List[Union[Expression, KeywordArgument]] = []
                 if not self._check("PUNCT", ")"):
                     while True:
                         if self._check("IDENTIFIER") and self._check_next("OPERATOR", "="):
                             name = self._advance().value
                             self._advance()
-                            args.append(NamedArgument(name=name, value=self._parse_expression()))
+                            args.append(KeywordArgument(name=name, value=self._parse_expression()))
                         else:
                             args.append(self._parse_expression())
                         if not self._match("PUNCT", ","):

@@ -103,7 +103,8 @@ _KEYWORDS = {
     "none",
     "import",
     "as",
-    "class",
+    "async",
+    "await",
 }
 
 _TOKEN_RE = re.compile(

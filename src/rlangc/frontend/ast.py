@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, Union
 
 
 @dataclass(frozen=True)
@@ -39,7 +39,13 @@ class BinaryExpression(Expression):
 @dataclass(frozen=True)
 class CallExpression(Expression):
     callee: Expression
-    arguments: List[Expression]
+    arguments: List[Union[Expression, "KeywordArgument"]]
+
+
+@dataclass(frozen=True)
+class KeywordArgument:
+    name: str
+    value: Expression
 
 
 @dataclass(frozen=True)
@@ -113,6 +119,13 @@ class FunctionDefinition(Statement):
     parameters: List[Parameter]
     return_annotation: Optional[str]
     body: List[Statement]
+    is_async: bool = False
+
+
+@dataclass(frozen=True)
+class ImportStatement(Statement):
+    module: str
+    alias: Optional[str] = None
 
 
 @dataclass(frozen=True)
