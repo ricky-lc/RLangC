@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from rlangc.frontend.ast import (
     AssignmentStatement,
@@ -40,6 +40,21 @@ class IRModule:
     tokens: List[str]
     statement_count: int
     instructions: List[IRInstruction]
+
+
+@dataclass(frozen=True)
+class BasicBlock:
+    name: str
+    start_index: int
+    end_index: int
+    instructions: List[IRInstruction]
+    successors: Tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class ControlFlowGraph:
+    entry_block: str
+    blocks: List[BasicBlock]
 
 
 class _IRBuilder:
@@ -236,3 +251,225 @@ class _IRBuilder:
 
 def from_ast(module: Module) -> IRModule:
     return _IRBuilder().build_module(module)
+
+
+def build_cfg(module: IRModule) -> ControlFlowGraph:
+    instructions = module.instructions
+    if not instructions:
+        return ControlFlowGraph(entry_block="block_0", blocks=[])
+
+    label_to_index: Dict[str, int] = {}
+    for index, instruction in enumerate(instructions):
+        if instruction.opcode == "LABEL":
+            label_to_index[str(instruction.operands[0])] = index
+
+    leaders = {0}
+    for index, instruction in enumerate(instructions):
+        opcode = instruction.opcode
+        if opcode == "LABEL":
+            leaders.add(index)
+        if opcode in {"JUMP", "JUMP_IF_FALSE", "FOR_ITER"}:
+            target_label = str(instruction.operands[-1])
+            if target_label in label_to_index:
+                leaders.add(label_to_index[target_label])
+            if index + 1 < len(instructions):
+                leaders.add(index + 1)
+        if opcode == "RETURN" and index + 1 < len(instructions):
+            leaders.add(index + 1)
+
+    ordered_leaders = sorted(leaders)
+    block_ranges: List[Tuple[int, int]] = []
+    for leader_index, start in enumerate(ordered_leaders):
+        end = (
+            ordered_leaders[leader_index + 1] - 1
+            if leader_index + 1 < len(ordered_leaders)
+            else len(instructions) - 1
+        )
+        block_ranges.append((start, end))
+
+    block_names: Dict[int, str] = {}
+    for block_index, (start, _) in enumerate(block_ranges):
+        instruction = instructions[start]
+        if instruction.opcode == "LABEL":
+            block_names[start] = f"label_{instruction.operands[0]}"
+        else:
+            block_names[start] = f"block_{block_index}"
+
+    blocks: List[BasicBlock] = []
+    for block_index, (start, end) in enumerate(block_ranges):
+        block_instructions = instructions[start : end + 1]
+        block_name = block_names[start]
+        successors = _resolve_successors(
+            block_instructions[-1],
+            block_index,
+            block_ranges,
+            block_names,
+            label_to_index,
+        )
+        blocks.append(
+            BasicBlock(
+                name=block_name,
+                start_index=start,
+                end_index=end,
+                instructions=block_instructions,
+                successors=tuple(successors),
+            )
+        )
+
+    return ControlFlowGraph(entry_block=blocks[0].name, blocks=blocks)
+
+
+def optimize(module: IRModule) -> IRModule:
+    optimized: List[IRInstruction] = []
+    index = 0
+    instructions = module.instructions
+    while index < len(instructions):
+        folded_instruction, consumed = _try_fold_constant_sequence(instructions, index)
+        if folded_instruction is not None:
+            optimized.append(folded_instruction)
+            index += consumed
+            continue
+
+        instruction = instructions[index]
+        if (
+            instruction.opcode == "JUMP"
+            and index + 1 < len(instructions)
+            and instructions[index + 1].opcode == "LABEL"
+            and str(instruction.operands[0]) == str(instructions[index + 1].operands[0])
+        ):
+            index += 1
+            continue
+        optimized.append(instruction)
+        index += 1
+
+    return IRModule(
+        tokens=module.tokens,
+        statement_count=module.statement_count,
+        instructions=optimized,
+    )
+
+
+def _resolve_successors(
+    last_instruction: IRInstruction,
+    block_index: int,
+    block_ranges: List[Tuple[int, int]],
+    block_names: Dict[int, str],
+    label_to_index: Dict[str, int],
+) -> List[str]:
+    opcode = last_instruction.opcode
+    successors: List[str] = []
+    next_block_name: Optional[str] = None
+    if block_index + 1 < len(block_ranges):
+        next_block_name = block_names[block_ranges[block_index + 1][0]]
+
+    if opcode == "JUMP":
+        target = label_to_index.get(str(last_instruction.operands[0]))
+        if target is not None:
+            successors.append(block_names[target])
+        return successors
+
+    if opcode in {"JUMP_IF_FALSE", "FOR_ITER"}:
+        target = label_to_index.get(str(last_instruction.operands[-1]))
+        if next_block_name is not None:
+            successors.append(next_block_name)
+        if target is not None:
+            successors.append(block_names[target])
+        return successors
+
+    if opcode == "RETURN":
+        return successors
+
+    if next_block_name is not None:
+        successors.append(next_block_name)
+    return successors
+
+
+def _try_fold_constant_sequence(
+    instructions: List[IRInstruction], index: int
+) -> Tuple[Optional[IRInstruction], int]:
+    if (
+        index + 2 < len(instructions)
+        and instructions[index].opcode == "PUSH_CONST"
+        and instructions[index + 1].opcode == "PUSH_CONST"
+        and instructions[index + 2].opcode == "BINARY_OP"
+    ):
+        left = instructions[index].operands[0]
+        right = instructions[index + 1].operands[0]
+        operator = str(instructions[index + 2].operands[0])
+        folded = _fold_binary(operator, left, right)
+        if folded is not None:
+            return IRInstruction(opcode="PUSH_CONST", operands=(folded,)), 3
+
+    if (
+        index + 1 < len(instructions)
+        and instructions[index].opcode == "PUSH_CONST"
+        and instructions[index + 1].opcode == "UNARY_OP"
+    ):
+        value = instructions[index].operands[0]
+        operator = str(instructions[index + 1].operands[0])
+        folded = _fold_unary(operator, value)
+        if folded is not None:
+            return IRInstruction(opcode="PUSH_CONST", operands=(folded,)), 2
+    return None, 0
+
+
+def _fold_binary(operator: str, left: Any, right: Any) -> Optional[Any]:
+    try:
+        if operator == "+":
+            return left + right
+        if operator == "-":
+            return left - right
+        if operator == "*":
+            return left * right
+        if operator == "/":
+            return left / right
+        if operator == "%":
+            return left % right
+        if operator == "**":
+            return left**right
+        if operator == "//":
+            return left // right
+        if operator == "==":
+            return left == right
+        if operator == "!=":
+            return left != right
+        if operator == "<":
+            return left < right
+        if operator == "<=":
+            return left <= right
+        if operator == ">":
+            return left > right
+        if operator == ">=":
+            return left >= right
+        if operator == "and":
+            return bool(left and right)
+        if operator == "or":
+            return bool(left or right)
+        if operator == "&":
+            return left & right
+        if operator == "|":
+            return left | right
+        if operator == "^":
+            return left ^ right
+        if operator == "<<":
+            return left << right
+        if operator == ">>":
+            return left >> right
+    except Exception:
+        return None
+    return None
+
+
+def _fold_unary(operator: str, value: Any) -> Optional[Any]:
+    try:
+        if operator == "+":
+            return +value
+        if operator == "-":
+            return -value
+        if operator == "not":
+            return not value
+        if operator == "~":
+            return ~value
+    except Exception:
+        return None
+    return None

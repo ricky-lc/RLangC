@@ -2,7 +2,7 @@ import unittest
 
 from rlangc.frontend.lexer import tokenize
 from rlangc.frontend.parser import parse
-from rlangc.ir.ir import from_ast
+from rlangc.ir.ir import IRInstruction, IRModule, build_cfg, from_ast, optimize
 
 
 class IRTests(unittest.TestCase):
@@ -59,6 +59,34 @@ class IRTests(unittest.TestCase):
                 ("CALL", (2,)),
                 ("STORE_NAME", ("sum", "let")),
             ],
+        )
+
+    def test_build_cfg_tracks_branch_successors(self) -> None:
+        module = from_ast(parse(tokenize("let x = 0\nif x < 2:\n    x += 1\nelse:\n    x += 2\nprint(x)")))
+        cfg = build_cfg(module)
+        self.assertGreaterEqual(len(cfg.blocks), 3)
+        branch_blocks = [
+            block for block in cfg.blocks if block.instructions[-1].opcode in {"JUMP_IF_FALSE", "FOR_ITER"}
+        ]
+        self.assertTrue(branch_blocks)
+        self.assertEqual(len(branch_blocks[0].successors), 2)
+
+    def test_optimize_folds_constants_and_removes_redundant_jumps(self) -> None:
+        module = IRModule(
+            tokens=[],
+            statement_count=0,
+            instructions=[
+                IRInstruction("PUSH_CONST", (2,)),
+                IRInstruction("PUSH_CONST", (3,)),
+                IRInstruction("BINARY_OP", ("+",)),
+                IRInstruction("JUMP", ("end",)),
+                IRInstruction("LABEL", ("end",)),
+            ],
+        )
+        optimized = optimize(module)
+        self.assertEqual(
+            [(instruction.opcode, instruction.operands) for instruction in optimized.instructions],
+            [("PUSH_CONST", (5,)), ("LABEL", ("end",))],
         )
 
 

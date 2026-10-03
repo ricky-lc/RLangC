@@ -91,13 +91,13 @@ The MVL focuses on a compact, usable core:
 ### Tasks
 - [x] IR instruction set design
 - [x] AST to IR transformation
-- [ ] Control flow graph construction
+- [x] Control flow graph construction
 - [ ] SSA form generation (optional)
-- [ ] Basic optimizations
+- [x] Basic optimizations
 
 ### Testing
 - [x] IR correctness
-- [ ] Optimization verification
+- [x] Optimization verification
 - [ ] Round-trip testing
 
 ## Phase 6: Interpreter Backend 📋
