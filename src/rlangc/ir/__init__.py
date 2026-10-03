@@ -1,3 +1,19 @@
-from rlangc.ir.ir import IRModule, from_ast
+from rlangc.ir.ir import (
+    BasicBlock,
+    ControlFlowGraph,
+    IRInstruction,
+    IRModule,
+    build_cfg,
+    from_ast,
+    optimize,
+)
 
-__all__ = ["IRModule", "from_ast"]
+__all__ = [
+    "BasicBlock",
+    "ControlFlowGraph",
+    "IRInstruction",
+    "IRModule",
+    "build_cfg",
+    "from_ast",
+    "optimize",
+]

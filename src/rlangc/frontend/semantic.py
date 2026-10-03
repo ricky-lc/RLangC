@@ -56,23 +56,24 @@ class Scope:
 
 class _Analyzer:
     _BUILTINS = {
-        "print",
-        "len",
-        "str",
-        "int",
-        "float",
-        "bool",
-        "list",
-        "dict",
-        "format",
-        "range",
+        "print": "function:none",
+        "len": "function:int",
+        "str": "function:str",
+        "int": "function:int",
+        "float": "function:float",
+        "bool": "function:bool",
+        "list": "function:list",
+        "dict": "function:dict",
+        "format": "function:str",
+        "range": "function:list",
     }
     _COMPARISON_OPERATORS = {"==", "!=", "<", "<=", ">", ">="}
+    _FUNCTION_ANNOTATION_PREFIX = "function:"
 
     def __init__(self) -> None:
         self._scope = Scope()
-        for name in self._BUILTINS:
-            self._scope.define(Symbol(name=name, is_const=True))
+        for name, annotation in self._BUILTINS.items():
+            self._scope.define(Symbol(name=name, is_const=True, annotation=annotation))
 
     def analyze(self, module: Module) -> None:
         self._analyze_statements(module.statements)
@@ -130,7 +131,13 @@ class _Analyzer:
             return
 
         if isinstance(statement, FunctionDefinition):
-            self._scope.define(Symbol(name=statement.name, is_const=True, annotation="function"))
+            self._scope.define(
+                Symbol(
+                    name=statement.name,
+                    is_const=True,
+                    annotation=self._function_annotation(statement.return_annotation),
+                )
+            )
             for parameter in statement.parameters:
                 if parameter.default is not None:
                     self._analyze_expression(parameter.default)
@@ -263,6 +270,10 @@ class _Analyzer:
             if {left_type, right_type} == {"int", "float"}:
                 return "float"
             return None
+        if isinstance(expression, CallExpression):
+            if isinstance(expression.callee, Identifier):
+                return self._infer_callable_return_type(expression.callee.name)
+            return None
         return None
 
     def _is_type_compatible(self, expected: Optional[str], actual: Optional[str]) -> bool:
@@ -276,6 +287,18 @@ class _Analyzer:
 
     def _new_scope(self) -> "_ScopeContext":
         return _ScopeContext(self)
+
+    def _function_annotation(self, return_annotation: Optional[str]) -> str:
+        return f"{self._FUNCTION_ANNOTATION_PREFIX}{return_annotation or ''}"
+
+    def _infer_callable_return_type(self, name: str) -> Optional[str]:
+        symbol = self._scope.resolve(name)
+        if symbol is None or symbol.annotation is None:
+            return None
+        if not symbol.annotation.startswith(self._FUNCTION_ANNOTATION_PREFIX):
+            return None
+        return_type = symbol.annotation[len(self._FUNCTION_ANNOTATION_PREFIX) :]
+        return return_type or None
 
     def _error(self, message: str) -> None:
         raise SemanticError(message)

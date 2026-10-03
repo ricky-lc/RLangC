@@ -83,36 +83,36 @@ The MVL focuses on a compact, usable core:
 
 ### Testing
 - [x] Semantic error detection
-- [ ] Type inference accuracy
+- [x] Type inference accuracy
 - [x] Scope resolution tests
 
 ## Phase 5: IR Generation 📋
 
 ### Tasks
-- [ ] IR instruction set design
-- [ ] AST to IR transformation
-- [ ] Control flow graph construction
+- [x] IR instruction set design
+- [x] AST to IR transformation
+- [x] Control flow graph construction
 - [ ] SSA form generation (optional)
-- [ ] Basic optimizations
+- [x] Basic optimizations
 
 ### Testing
-- [ ] IR correctness
-- [ ] Optimization verification
+- [x] IR correctness
+- [x] Optimization verification
 - [ ] Round-trip testing
 
 ## Phase 6: Interpreter Backend 📋
 
 ### Tasks
-- [ ] Stack-based VM implementation
-- [ ] Instruction execution
-- [ ] Built-in functions (print, etc.)
-- [ ] List operations
-- [ ] Function calls and returns
-- [ ] Error handling
+- [x] Stack-based VM implementation
+- [x] Instruction execution
+- [x] Built-in functions (print, etc.)
+- [x] List operations
+- [x] Function calls and returns
+- [x] Error handling
 
 ### Testing
-- [ ] Execute example programs
-- [ ] Runtime error handling
+- [x] Execute example programs
+- [x] Runtime error handling
 - [ ] Performance benchmarks
 
 ## Phase 7: C Code Generation Backend 📋

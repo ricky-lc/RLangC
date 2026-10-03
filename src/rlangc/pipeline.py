@@ -6,4 +6,4 @@ def run(source: str) -> ir.IRModule:
     tokens = lexer.tokenize(source)
     module = parser.parse(tokens)
     semantic.analyze(module)
-    return ir.from_ast(module)
+    return ir.optimize(ir.from_ast(module))
