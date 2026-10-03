@@ -83,7 +83,7 @@ The MVL focuses on a compact, usable core:
 
 ### Testing
 - [x] Semantic error detection
-- [ ] Type inference accuracy
+- [x] Type inference accuracy
 - [x] Scope resolution tests
 
 ## Phase 5: IR Generation 📋

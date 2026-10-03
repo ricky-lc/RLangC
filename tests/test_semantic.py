@@ -30,6 +30,23 @@ class SemanticTests(unittest.TestCase):
         module = parse(tokenize("print(len([1, 2, 3]))"))
         analyze(module)
 
+    def test_infers_type_from_function_return_annotation(self) -> None:
+        module = parse(
+            tokenize(
+                "def get_count() -> int:\n"
+                "    return 42\n"
+                "let value = get_count()\n"
+                'value = "text"'
+            )
+        )
+        with self.assertRaisesRegex(SemanticError, "Incompatible assignment type for 'value'"):
+            analyze(module)
+
+    def test_infers_type_from_builtin_function_calls(self) -> None:
+        module = parse(tokenize('let size = len([1, 2, 3])\nsize = "oops"'))
+        with self.assertRaisesRegex(SemanticError, "Incompatible assignment type for 'size'"):
+            analyze(module)
+
 
 if __name__ == "__main__":
     unittest.main()
