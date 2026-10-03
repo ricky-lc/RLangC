@@ -66,7 +66,7 @@ The MVL focuses on a compact, usable core:
 - [ ] Error recovery and reporting
 
 ### Testing
-- [ ] Parse example programs
+- [x] Parse example programs
 - [ ] Syntax error detection
 - [ ] AST correctness verification
 

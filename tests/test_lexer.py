@@ -67,6 +67,12 @@ class LexerTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "line 2, column 1"):
             tokenize("let x = 1\n€")
 
+    def test_tokenize_recognizes_async_await_keywords(self) -> None:
+        tokens = tokenize("async def fetch():\n    return await call()\n")
+        keyword_values = [token.value for token in tokens if token.kind == "KEYWORD"]
+        self.assertIn("async", keyword_values)
+        self.assertIn("await", keyword_values)
+
 
 if __name__ == "__main__":
     unittest.main()
