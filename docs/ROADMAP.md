@@ -36,7 +36,7 @@ The MVL focuses on a compact, usable core:
 6. **Standard Library**: core collections, I/O, networking
 7. **Async Runtime**: event loop, tasks, futures
 
-## Phase 2: Lexer Implementation 🚧
+## Phase 2: Lexer Implementation ✅
 
 ### Tasks
 - [x] Token definitions
@@ -49,11 +49,11 @@ The MVL focuses on a compact, usable core:
 - [x] Error reporting with location
 
 ### Testing
-- [ ] Unit tests for each token type
-- [ ] Indentation edge cases
-- [ ] Error recovery tests
+- [x] Unit tests for each token type
+- [x] Indentation edge cases
+- [x] Error recovery tests
 
-## Phase 3: Parser Implementation 🚧
+## Phase 3: Parser Implementation ✅
 
 ### Tasks
 - [x] AST node definitions
@@ -61,30 +61,30 @@ The MVL focuses on a compact, usable core:
 - [x] Expression parsing with precedence
 - [x] Statement parsing
 - [x] Function declaration parsing
-- [ ] Class declaration parsing
+- [x] Class declaration parsing
 - [x] Both syntax style support (indent/brace)
-- [ ] Error recovery and reporting
+- [x] Error recovery and reporting
 
 ### Testing
 - [x] Parse example programs
-- [ ] Syntax error detection
-- [ ] AST correctness verification
+- [x] Syntax error detection
+- [x] AST correctness verification
 
-## Phase 4: Semantic Analysis 📋
+## Phase 4: Semantic Analysis 🚧
 
 ### Tasks
-- [ ] Symbol table implementation
-- [ ] Scope management
-- [ ] Type inference engine
-- [ ] Type checking rules
-- [ ] Const reassignment detection
-- [ ] Undefined variable detection
-- [ ] Type compatibility checking
+- [x] Symbol table implementation
+- [x] Scope management
+- [x] Type inference engine
+- [x] Type checking rules
+- [x] Const reassignment detection
+- [x] Undefined variable detection
+- [x] Type compatibility checking
 
 ### Testing
-- [ ] Semantic error detection
+- [x] Semantic error detection
 - [ ] Type inference accuracy
-- [ ] Scope resolution tests
+- [x] Scope resolution tests
 
 ## Phase 5: IR Generation 📋
 
@@ -254,9 +254,9 @@ The MVL focuses on a compact, usable core:
 
 ## Current Status
 
-**Active Phase**: Phase 1 (Core Foundation) - Complete  
-**Next Phase**: Phase 2 (Lexer Implementation)  
-**Overall Progress**: ~10% complete
+**Active Phase**: Phase 4 (Semantic Analysis, in progress)  
+**Next Phase**: Phase 5 (IR Generation)  
+**Overall Progress**: ~28% complete
 
 ## Success Criteria
 

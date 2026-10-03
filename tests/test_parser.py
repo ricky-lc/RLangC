@@ -1,9 +1,11 @@
 import unittest
+from pathlib import Path
 
 from rlangc.frontend.ast import (
     AssignmentStatement,
     BinaryExpression,
     CallExpression,
+    ClassDefinition,
     DictLiteral,
     ForStatement,
     FunctionDefinition,
@@ -13,12 +15,13 @@ from rlangc.frontend.ast import (
     ImportStatement,
     LetStatement,
     Literal,
+    NamedArgument,
     ReturnStatement,
     UnaryExpression,
     WhileStatement,
 )
 from rlangc.frontend.lexer import tokenize
-from rlangc.frontend.parser import parse
+from rlangc.frontend.parser import ParseError, parse
 
 
 class ParserTests(unittest.TestCase):

@@ -71,6 +71,12 @@ class DictLiteral(Expression):
 
 
 @dataclass(frozen=True)
+class NamedArgument(Expression):
+    name: str
+    value: Expression
+
+
+@dataclass(frozen=True)
 class Statement:
     pass
 
@@ -120,6 +126,13 @@ class FunctionDefinition(Statement):
 class ImportStatement(Statement):
     module: str
     alias: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class ClassDefinition(Statement):
+    name: str
+    bases: List[str]
+    body: List[Statement]
 
 
 @dataclass(frozen=True)
