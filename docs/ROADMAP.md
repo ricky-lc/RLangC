@@ -103,16 +103,16 @@ The MVL focuses on a compact, usable core:
 ## Phase 6: Interpreter Backend 📋
 
 ### Tasks
-- [ ] Stack-based VM implementation
-- [ ] Instruction execution
-- [ ] Built-in functions (print, etc.)
-- [ ] List operations
-- [ ] Function calls and returns
-- [ ] Error handling
+- [x] Stack-based VM implementation
+- [x] Instruction execution
+- [x] Built-in functions (print, etc.)
+- [x] List operations
+- [x] Function calls and returns
+- [x] Error handling
 
 ### Testing
-- [ ] Execute example programs
-- [ ] Runtime error handling
+- [x] Execute example programs
+- [x] Runtime error handling
 - [ ] Performance benchmarks
 
 ## Phase 7: C Code Generation Backend 📋
